@@ -229,32 +229,30 @@ class GameRoom {
   }
 
   getPublicState(playerId) {
-    const player = this.players.find(p => p.id === playerId);
-    
-    return {
-      roomCode: this.roomCode,
-      gameStarted: this.gameStarted,
-      phase: this.phase,
-      roundNumber: this.roundNumber,
-      timer: this.timer,
-      players: this.players.map(p => ({
-        id: p.id,
-        name: p.name,
-        isAlive: p.isAlive,
-        isHost: p.isHost,
-        isMe: p.id === playerId,
-        role: (p.id === playerId || !p.isAlive) ? p.role : null // Only reveal own role or dead player roles
-      })),
-      myRole: player?.role,
-      eliminated: this.eliminated,
-      gameLog: this.gameLog,
-      prayerPaused: this.prayerPaused,
-      // Night phase info (only for relevant roles)
-      nightInfo: this.getNightInfo(playerId),
-      // Day phase info
-      dayActions: this.phase === 'voting' ? this.dayActions : { accusations: this.dayActions.accusations }
-    };
-  }
+  const player = this.players.find(p => p.id === playerId);
+  
+  return {
+    roomCode: this.roomCode,
+    gameStarted: this.gameStarted,
+    phase: this.phase,
+    roundNumber: this.roundNumber,
+    timer: this.timer,
+    players: this.players.map(p => ({
+      id: p.id,
+      name: p.name,
+      isAlive: p.isAlive,
+      isHost: p.isHost,
+      isMe: p.id === playerId, // FIX: Compare with current player's socket ID
+      role: (p.id === playerId || !p.isAlive) ? p.role : null
+    })),
+    myRole: player?.role,
+    eliminated: this.eliminated,
+    gameLog: this.gameLog,
+    prayerPaused: this.prayerPaused,
+    nightInfo: this.getNightInfo(playerId),
+    dayActions: this.phase === 'voting' ? this.dayActions : { accusations: this.dayActions.accusations }
+  };
+}
 
   getNightInfo(playerId) {
     const player = this.players.find(p => p.id === playerId);
