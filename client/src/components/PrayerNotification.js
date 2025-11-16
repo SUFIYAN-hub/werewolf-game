@@ -81,55 +81,60 @@ function PrayerNotification({ location }) {
   if (!nextPrayer) return null;
 
   return (
-    <>
-      {/* Prayer Time Indicator (Always visible) */}
-      <div className="fixed top-4 left-4 bg-green-900/80 backdrop-blur-md text-white px-4 py-2 rounded-lg shadow-lg border border-green-500/50 z-50">
-        <div className="flex items-center space-x-2">
-          <Clock className="w-4 h-4" />
-          <div className="text-xs">
-            <p className="font-semibold">Next: {nextPrayer.name} {nextPrayer.emoji}</p>
-            <p className="text-green-200">in {timeUntilPrayer}</p>
-          </div>
+  <>
+    {/* Prayer Time Indicator (Always visible) - Responsive */}
+    <div className="fixed top-2 left-2 sm:top-4 sm:left-4 bg-green-900/80 backdrop-blur-md text-white px-2 py-1 sm:px-4 sm:py-2 rounded-lg shadow-lg border border-green-500/50 z-50">
+      <div className="flex items-center space-x-1 sm:space-x-2">
+        <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+        <div className="text-xs">
+          <p className="font-semibold text-xs sm:text-sm">
+            <span className="hidden sm:inline">Next: </span>{nextPrayer.name} {nextPrayer.emoji}
+          </p>
+          <p className="text-green-200 text-xs">
+            <span className="hidden sm:inline">in </span>{timeUntilPrayer}
+          </p>
         </div>
       </div>
+    </div>
 
-      {/* Prayer Time Notification (Shows 10 min before) */}
-      {showNotification && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-4 rounded-lg shadow-2xl border-2 border-green-400 z-50 animate-bounce">
-          <div className="flex items-center space-x-4">
-            <div className="text-3xl">{nextPrayer.emoji}</div>
-            <div>
-              <h3 className="font-bold text-lg">{nextPrayer.name} Prayer Time Approaching!</h3>
-              <p className="text-sm text-green-100">
-                {timeUntilPrayer === '0m' 
-                  ? 'It\'s time to pray now!' 
-                  : `Prepare yourself - ${timeUntilPrayer} remaining`}
-              </p>
-              <p className="text-xs text-green-200 mt-1">
-                The game will auto-pause during prayer time
-              </p>
-            </div>
-            <button
-              onClick={() => setShowNotification(false)}
-              className="ml-4 hover:bg-green-700 p-2 rounded-full transition"
-            >
-              <X className="w-5 h-5" />
-            </button>
+    {/* Prayer Time Notification (Shows 10 min before) - Responsive */}
+    {showNotification && (
+      <div className="fixed top-16 sm:top-20 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-3 sm:px-6 sm:py-4 rounded-lg shadow-2xl border-2 border-green-400 z-50 max-w-xs sm:max-w-md mx-2 animate-bounce">
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          <div className="text-2xl sm:text-3xl">{nextPrayer.emoji}</div>
+          <div className="flex-1">
+            <h3 className="font-bold text-sm sm:text-lg">{nextPrayer.name} Prayer Time!</h3>
+            <p className="text-xs sm:text-sm text-green-100">
+              {timeUntilPrayer === '0m' 
+                ? 'Time to pray now!' 
+                : `Prepare - ${timeUntilPrayer} left`}
+            </p>
+            <p className="text-xs text-green-200 mt-1 hidden sm:block">
+              Game will auto-pause during prayer
+            </p>
           </div>
+          <button
+            onClick={() => setShowNotification(false)}
+            className="ml-2 hover:bg-green-700 p-1 sm:p-2 rounded-full transition"
+          >
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
         </div>
-      )}
-
-      {/* Islamic Reminder */}
-      <div className="fixed bottom-4 left-4 bg-purple-900/80 backdrop-blur-md text-white px-4 py-2 rounded-lg shadow-lg border border-purple-500/50 z-40 max-w-xs">
-        <p className="text-xs text-purple-200">
-          "إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا"
-        </p>
-        <p className="text-xs text-purple-300 mt-1">
-          Prayer is prescribed for believers at specific times
-        </p>
       </div>
-    </>
-  );
+    )}
+
+    {/* Islamic Reminder - Responsive */}
+    <div className="fixed bottom-2 left-2 sm:bottom-4 sm:left-4 bg-purple-900/80 backdrop-blur-md text-white px-2 py-1 sm:px-4 sm:py-2 rounded-lg shadow-lg border border-purple-500/50 z-40 max-w-xs">
+      <p className="text-xs text-purple-200 hidden sm:block">
+        "إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَّوْقُوتًا"
+      </p>
+      <p className="text-xs text-purple-300 mt-1">
+        <span className="hidden sm:inline">Prayer is prescribed at specific times</span>
+        <span className="sm:hidden">🕌 Prayer reminder active</span>
+      </p>
+    </div>
+  </>
+);
 }
 
 export default PrayerNotification;
