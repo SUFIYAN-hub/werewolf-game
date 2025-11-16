@@ -3,12 +3,17 @@ import { ScrollText, Moon, Sun, Skull, Users, MessageSquare, AlertTriangle } fro
 
 function GameLog({ gameLog }) {
   const logEndRef = useRef(null);
+  const prevLogLengthRef = useRef(0);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll ONLY when new messages are added (not on every update)
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll if the log length actually increased (new message added)
+    if (gameLog && gameLog.length > prevLogLengthRef.current) {
+      logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      prevLogLengthRef.current = gameLog.length;
+    }
   }, [gameLog]);
-
+  
   const getLogIcon = (type) => {
     switch (type) {
       case 'game_start':
