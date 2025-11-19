@@ -97,16 +97,16 @@ function handleSocketConnection(socket, io) {
     const player = room.players.find((p) => p.id === socket.id);
     if (!player || !player.isAlive) return;
 
-    if (action === "werewolf_kill" && player.role === "werewolf") {
-      room.nightActions.werewolfTarget = targetId;
-      player.hasActed = true;
-    } else if (action === "doctor_heal" && player.role === "doctor") {
-      room.nightActions.doctorTarget = targetId;
-      player.hasActed = true;
-    } else if (action === "seer_check" && player.role === "seer") {
-      room.nightActions.seerTarget = targetId;
-      player.hasActed = true;
-    }
+    if (action === 'werewolf_kill' && player.role === 'werewolf') {
+  room.nightActions.werewolfTarget = targetId;
+  player.hasActed = true;
+  
+  // Notify ALL werewolves about the target selection
+  room.players.forEach(p => {
+    io.to(p.id).emit('game_update', room.getPublicState(p.id));
+  });
+  return; // Important: return here to skip the general broadcast below
+}
 
     io.to(roomCode).emit("game_update", room.getPublicState(socket.id));
   });

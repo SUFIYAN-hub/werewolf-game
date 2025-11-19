@@ -254,16 +254,44 @@ class GameRoom {
   };
 }
 
+  // getNightInfo(playerId) {
+  //   const player = this.players.find(p => p.id === playerId);
+  //   if (!player || this.phase !== 'night') return null;
+
+  //   if (player.role === 'seer' && this.nightActions.seerResult) {
+  //     return { seerResult: this.nightActions.seerResult };
+  //   }
+
+  //   return null;
+  // }
   getNightInfo(playerId) {
-    const player = this.players.find(p => p.id === playerId);
-    if (!player || this.phase !== 'night') return null;
+  const player = this.players.find(p => p.id === playerId);
+  if (!player || this.phase !== 'night') return null;
 
-    if (player.role === 'seer' && this.nightActions.seerResult) {
-      return { seerResult: this.nightActions.seerResult };
+  let nightInfo = {};
+
+  // Werewolves can see other werewolves
+  if (player.role === 'werewolf') {
+    const otherWerewolves = this.players
+      .filter(p => p.role === 'werewolf' && p.id !== playerId && p.isAlive)
+      .map(p => ({ id: p.id, name: p.name }));
+    
+    nightInfo.werewolfTeam = otherWerewolves;
+    
+    // Show current werewolf target if any
+    if (this.nightActions.werewolfTarget) {
+      const target = this.players.find(p => p.id === this.nightActions.werewolfTarget);
+      nightInfo.werewolfTarget = target ? target.name : null;
     }
-
-    return null;
   }
+
+  // Seer result
+  if (player.role === 'seer' && this.nightActions.seerResult) {
+    nightInfo.seerResult = this.nightActions.seerResult;
+  }
+
+  return Object.keys(nightInfo).length > 0 ? nightInfo : null;
+}
 }
 
 function generateRoomCode() {
