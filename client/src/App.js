@@ -18,6 +18,7 @@ function App() {
   const [gameState, setGameState] = useState(null);
   const [myRole, setMyRole] = useState(null);
   const [error, setError] = useState("");
+  const [showHunterRevenge, setShowHunterRevenge] = useState(false);
 
   useEffect(() => {
     // Listen for room created
@@ -75,6 +76,11 @@ function App() {
       }
     });
 
+    // Listen for hunter revenge prompt
+    socket.on("hunter_revenge_prompt", () => {
+      setShowHunterRevenge(true);
+    });
+
     return () => {
       socket.off("room_created");
       socket.off("room_joined");
@@ -84,6 +90,7 @@ function App() {
       socket.off("night_result");
       socket.off("error");
       socket.off("prayer_pause_update");
+      socket.off('hunter_revenge_prompt');
     };
   }, [gameState]);
 
@@ -132,55 +139,60 @@ function App() {
     socket.emit("prayer_pause", { roomCode, paused });
   };
 
+  const handleHunterRevenge = (targetId) => {
+    socket.emit("hunter_revenge", { roomCode, targetId });
+  };
+
   return (
-  <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-    <PrayerNotification location={location} />
-    
-    {error && (
-      <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-        {error}
-      </div>
-    )}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+      <PrayerNotification location={location} />
 
-    {/* ✅ ADD ROLE REVEAL HERE */}
-    {showRoleReveal && myRole && (
-      <RoleReveal
-        role={myRole}
-        onComplete={() => {
-          setShowRoleReveal(false);
-          setScreen('game');
-        }}
-      />
-    )}
+      {error && (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+          {error}
+        </div>
+      )}
 
-    {screen === 'home' && (
-      <HomeScreen onCreateRoom={createRoom} onJoinRoom={joinRoom} />
-    )}
+      {/* ✅ ADD ROLE REVEAL HERE */}
+      {showRoleReveal && myRole && (
+        <RoleReveal
+          role={myRole}
+          onComplete={() => {
+            setShowRoleReveal(false);
+            setScreen("game");
+          }}
+        />
+      )}
 
-    {screen === 'lobby' && (
-      <LobbyScreen 
-        roomCode={roomCode}
-        gameState={gameState}
-        onStartGame={startGame}
-      />
-    )}
+      {screen === "home" && (
+        <HomeScreen onCreateRoom={createRoom} onJoinRoom={joinRoom} />
+      )}
 
-    {screen === 'game' && !showRoleReveal && (
-      <GameScreen
-        roomCode={roomCode}
-        gameState={gameState}
-        myRole={myRole}
-        playerName={playerName}
-        onNightAction={handleNightAction}
-        onSendMessage={sendMessage}
-        onAccusePlayer={accusePlayer}
-        onSecondAccusation={secondAccusation}
-        onCastVote={castVote}
-        onTogglePrayerPause={togglePrayerPause}
-      />
-    )}
-  </div>
-);
+      {screen === "lobby" && (
+        <LobbyScreen
+          roomCode={roomCode}
+          gameState={gameState}
+          onStartGame={startGame}
+        />
+      )}
+
+      {screen === "game" && !showRoleReveal && (
+        <GameScreen
+          roomCode={roomCode}
+          gameState={gameState}
+          myRole={myRole}
+          playerName={playerName}
+          onNightAction={handleNightAction}
+          onSendMessage={sendMessage}
+          onAccusePlayer={accusePlayer}
+          onSecondAccusation={secondAccusation}
+          onCastVote={castVote}
+          onTogglePrayerPause={togglePrayerPause}
+          onHunterRevenge={handleHunterRevenge}
+        />
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">

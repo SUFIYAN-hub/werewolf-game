@@ -216,6 +216,31 @@ function RoleReveal({ role, onComplete }) {
           sound: "👥",
           description: "Find the werewolves...",
         };
+        case 'witch':
+      return {
+        title: 'WITCH',
+        color: 'from-purple-600 to-purple-900',
+        icon: <Heart className="w-32 h-32" />,
+        sound: '🧪',
+        description: 'Master of potions...'
+      };
+      
+    case 'hunter':
+      return {
+        title: 'HUNTER',
+        color: 'from-orange-600 to-orange-900',
+        icon: <Moon className="w-32 h-32" />,
+        sound: '🏹',
+        description: 'Never die alone...'
+      };
+    case 'detective':
+      return {
+        title: 'DETECTIVE',
+        color: 'from-indigo-600 to-indigo-900',
+        icon: <Eye className="w-32 h-32" />,
+        sound: '🔍',
+        description: 'Uncover the truth...'
+      };
       default:
         return {
           title: "UNKNOWN",

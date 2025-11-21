@@ -6,6 +6,7 @@ import GameLog from './GameLog';
 import NightPhase from './NightPhase';
 import DayPhase from './DayPhase';
 import VotingPhase from './VotingPhase';
+import HunterRevenge from './HunterRevenge';
 
 function GameScreen({ 
   roomCode, 
@@ -28,6 +29,7 @@ function GameScreen({
     );
   }
 
+  const [showHunterRevenge, setShowHunterRevenge] = useState(false);
   const { phase, roundNumber, timer, prayerPaused, players } = gameState;
   const myPlayer = players?.find(p => p.isMe);
   const isAlive = myPlayer?.isAlive;
@@ -59,6 +61,18 @@ function GameScreen({
 
 return (
   <div className={`min-h-screen bg-gradient-to-br ${getPhaseColor()} transition-all duration-1000`}>
+    
+     {/* ✅ ADD HUNTER REVENGE OVERLAY */}
+    {showHunterRevenge && myPlayer?.role === 'hunter' && !myPlayer?.isAlive && (
+      <HunterRevenge
+        gameState={gameState}
+        onHunterRevenge={(targetId) => {
+          onHunterRevenge(targetId);
+          setShowHunterRevenge(false);
+        }}
+      />
+    )}
+
     {/* Header */}
     <div className="bg-black/30 backdrop-blur-md border-b border-white/20 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
