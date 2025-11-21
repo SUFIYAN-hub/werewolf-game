@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react'; 
 import { Moon, Sun, Users, MessageSquare, Pause, Play } from 'lucide-react';
+
 import RoleCard from './RoleCard';
 import PlayerList from './PlayerList';
 import GameLog from './GameLog';
