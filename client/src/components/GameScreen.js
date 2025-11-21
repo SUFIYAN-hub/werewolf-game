@@ -18,8 +18,10 @@ function GameScreen({
   onAccusePlayer,
   onSecondAccusation,
   onCastVote,
-  onTogglePrayerPause 
+  onTogglePrayerPause,
+  onHunterRevenge 
 }) {
+  const [showHunterRevenge, setShowHunterRevenge] = useState(false);
   
   if (!gameState) {
     return (
@@ -29,7 +31,6 @@ function GameScreen({
     );
   }
 
-  const [showHunterRevenge, setShowHunterRevenge] = useState(false);
   const { phase, roundNumber, timer, prayerPaused, players } = gameState;
   const myPlayer = players?.find(p => p.isMe);
   const isAlive = myPlayer?.isAlive;
