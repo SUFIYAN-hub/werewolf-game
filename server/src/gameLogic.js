@@ -99,15 +99,15 @@ class GameRoom {
   }
   
   // Add new special roles based on player count
-  if (numPlayers >= 7) {
-    roles.push('witch');
-  }
-  if (numPlayers >= 8) {
-    roles.push('hunter');
-  }
-  if (numPlayers >= 9) {
-    roles.push('detective');
-  }
+if (numPlayers >= 6) {
+  roles.push('witch');  // ✅ Witch at 6 players
+}
+if (numPlayers >= 7) {
+  roles.push('hunter');  // ✅ Hunter at 7 players
+}
+if (numPlayers >= 8) {
+  roles.push('detective');  // ✅ Detective at 8 players
+}
   
   // Fill remaining with villagers
   while (roles.length < numPlayers) {
