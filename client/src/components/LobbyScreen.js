@@ -1,13 +1,24 @@
-import React from 'react';
-import { Users, Copy, Play } from 'lucide-react';
+import React from "react";
+import Button from "./Button";
+import { Users, Copy, Play, Clock } from "lucide-react";
+import { useState } from "react";
 
 function LobbyScreen({ roomCode, gameState, onStartGame }) {
+  const [copied, setCopied] = useState(false);
+
   const copyRoomCode = () => {
     navigator.clipboard.writeText(roomCode);
-    alert('Room code copied!');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const isHost = gameState?.players?.find(p => p.isMe)?.isHost;
+  // function LobbyScreen({ roomCode, gameState, onStartGame }) {
+  //   const copyRoomCode = () => {
+  //     navigator.clipboard.writeText(roomCode);
+  //     alert('Room code copied!');
+  //   };
+
+  const isHost = gameState?.players?.find((p) => p.isMe)?.isHost;
   const playerCount = gameState?.players?.length || 0;
   const canStart = playerCount >= 5;
 
@@ -24,12 +35,15 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
                   {roomCode}
                 </span>
               </div>
-              <button
+              <Button
                 onClick={copyRoomCode}
-                className="bg-purple-600 hover:bg-purple-700 p-3 rounded-lg"
+                variant={copied ? "success" : "ghost"}
+                size="sm"
+                icon={copied ? null : Copy}
+                success={copied}
               >
-                <Copy className="w-6 h-6 text-white" />
-              </button>
+                {copied ? "Copied!" : ""}
+              </Button>
             </div>
             <p className="text-purple-200 text-sm mt-2">
               Share this code with your friends
@@ -44,7 +58,7 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
                 Players ({playerCount})
               </h3>
               <span className="text-purple-300 text-sm">
-                {canStart ? 'Ready to start!' : `Need ${5 - playerCount} more`}
+                {canStart ? "Ready to start!" : `Need ${5 - playerCount} more`}
               </span>
             </div>
 
@@ -53,9 +67,9 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
                 <div
                   key={player.id}
                   className={`p-4 rounded-lg flex items-center justify-between ${
-                    player.isMe 
-                      ? 'bg-purple-600/40 border-2 border-purple-400' 
-                      : 'bg-white/10'
+                    player.isMe
+                      ? "bg-purple-600/40 border-2 border-purple-400"
+                      : "bg-white/10"
                   }`}
                 >
                   <div className="flex items-center">
@@ -65,7 +79,9 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
                     <div>
                       <p className="text-white font-semibold">
                         {player.name}
-                        {player.isMe && <span className="text-purple-300 ml-2">(You)</span>}
+                        {player.isMe && (
+                          <span className="text-purple-300 ml-2">(You)</span>
+                        )}
                       </p>
                       {player.isHost && (
                         <span className="text-yellow-400 text-xs">👑 Host</span>
@@ -90,23 +106,26 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
 
           {/* Start Button */}
           {isHost && (
-            <button
+            <Button
               onClick={onStartGame}
               disabled={!canStart}
-              className={`w-full py-4 px-6 rounded-lg font-semibold text-white flex items-center justify-center space-x-2 ${
-                canStart
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
-                  : 'bg-gray-600 cursor-not-allowed opacity-50'
-              }`}
+              variant="success"
+              size="lg"
+              fullWidth
+              icon={Play}
             >
-              <Play className="w-5 h-5" />
-              <span>Start Game</span>
-            </button>
+              Start Game
+            </Button>
           )}
 
           {!isHost && (
-            <div className="text-center text-purple-300">
-              Waiting for host to start the game...
+            <div className="text-center">
+              <div className="inline-flex items-center space-x-2 bg-purple-900/30 px-6 py-3 rounded-lg border border-purple-500/50">
+                <Clock className="w-5 h-5 text-purple-300 animate-pulse" />
+                <span className="text-purple-200">
+                  Waiting for host to start...
+                </span>
+              </div>
             </div>
           )}
         </div>

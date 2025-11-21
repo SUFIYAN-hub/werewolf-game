@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
-import { Heart, Skull, AlertCircle, Check } from 'lucide-react';
+import React, { useState } from "react";
+import { Heart, Skull, AlertCircle, Check } from "lucide-react";
+import Button from "./Button";
 
 function WitchNightPhase({ gameState, onNightAction }) {
   const [action, setAction] = useState(null); // 'save' or 'kill'
   const [selectedTarget, setSelectedTarget] = useState(null);
   const [actionSubmitted, setActionSubmitted] = useState(false);
 
-  const alivePlayers = gameState?.players?.filter(p => p.isAlive) || [];
+  const alivePlayers = gameState?.players?.filter((p) => p.isAlive) || [];
   const victim = gameState?.nightInfo?.werewolfVictim;
   const hasLifePotion = gameState?.nightInfo?.hasLifePotion;
   const hasDeathPotion = gameState?.nightInfo?.hasDeathPotion;
 
   const handleSubmit = () => {
-    if (action === 'save' && victim) {
-      onNightAction('witch_save', victim);
-    } else if (action === 'kill' && selectedTarget) {
-      onNightAction('witch_kill', selectedTarget);
-    } else if (action === 'nothing') {
-      onNightAction('witch_nothing', null);
+    if (action === "save" && victim) {
+      onNightAction("witch_save", victim);
+    } else if (action === "kill" && selectedTarget) {
+      onNightAction("witch_kill", selectedTarget);
+    } else if (action === "nothing") {
+      onNightAction("witch_nothing", null);
     }
     setActionSubmitted(true);
   };
@@ -29,7 +30,9 @@ function WitchNightPhase({ gameState, onNightAction }) {
           <Check className="w-6 h-6 text-purple-400" />
           <div>
             <h4 className="text-white font-bold">Potions Used</h4>
-            <p className="text-purple-200">Your choice has been recorded. Wait for dawn...</p>
+            <p className="text-purple-200">
+              Your choice has been recorded. Wait for dawn...
+            </p>
           </div>
         </div>
       </div>
@@ -61,27 +64,63 @@ function WitchNightPhase({ gameState, onNightAction }) {
       <div className="mb-6 bg-purple-900/30 rounded-lg p-4 border border-purple-500/50">
         <h4 className="text-white font-semibold mb-3">Your Potions:</h4>
         <div className="grid grid-cols-2 gap-3">
-          <div className={`p-3 rounded-lg border-2 ${hasLifePotion ? 'bg-green-900/30 border-green-500' : 'bg-gray-700/30 border-gray-600'}`}>
+          <div
+            className={`p-3 rounded-lg border-2 ${
+              hasLifePotion
+                ? "bg-green-900/30 border-green-500"
+                : "bg-gray-700/30 border-gray-600"
+            }`}
+          >
             <div className="flex items-center space-x-2 mb-1">
-              <Heart className={`w-5 h-5 ${hasLifePotion ? 'text-green-400' : 'text-gray-500'}`} />
-              <span className={`font-semibold ${hasLifePotion ? 'text-green-200' : 'text-gray-400'}`}>
+              <Heart
+                className={`w-5 h-5 ${
+                  hasLifePotion ? "text-green-400" : "text-gray-500"
+                }`}
+              />
+              <span
+                className={`font-semibold ${
+                  hasLifePotion ? "text-green-200" : "text-gray-400"
+                }`}
+              >
                 Life Potion
               </span>
             </div>
-            <p className={`text-xs ${hasLifePotion ? 'text-green-300' : 'text-gray-500'}`}>
-              {hasLifePotion ? 'Available ✅' : 'Used ❌'}
+            <p
+              className={`text-xs ${
+                hasLifePotion ? "text-green-300" : "text-gray-500"
+              }`}
+            >
+              {hasLifePotion ? "Available ✅" : "Used ❌"}
             </p>
           </div>
-          
-          <div className={`p-3 rounded-lg border-2 ${hasDeathPotion ? 'bg-red-900/30 border-red-500' : 'bg-gray-700/30 border-gray-600'}`}>
+
+          <div
+            className={`p-3 rounded-lg border-2 ${
+              hasDeathPotion
+                ? "bg-red-900/30 border-red-500"
+                : "bg-gray-700/30 border-gray-600"
+            }`}
+          >
             <div className="flex items-center space-x-2 mb-1">
-              <Skull className={`w-5 h-5 ${hasDeathPotion ? 'text-red-400' : 'text-gray-500'}`} />
-              <span className={`font-semibold ${hasDeathPotion ? 'text-red-200' : 'text-gray-400'}`}>
+              <Skull
+                className={`w-5 h-5 ${
+                  hasDeathPotion ? "text-red-400" : "text-gray-500"
+                }`}
+              />
+              <span
+                className={`font-semibold ${
+                  hasDeathPotion ? "text-red-200" : "text-gray-400"
+                }`}
+              >
                 Death Potion
               </span>
             </div>
-            <p className={`text-xs ${hasDeathPotion ? 'text-red-300' : 'text-gray-500'}`}>
-              {hasDeathPotion ? 'Available ✅' : 'Used ❌'}
+            <p
+              className={`text-xs ${
+                hasDeathPotion ? "text-red-300" : "text-gray-500"
+              }`}
+            >
+              {hasDeathPotion ? "Available ✅" : "Used ❌"}
             </p>
           </div>
         </div>
@@ -91,44 +130,52 @@ function WitchNightPhase({ gameState, onNightAction }) {
       {!action && (
         <div className="space-y-3">
           <h4 className="text-white font-semibold mb-3">Choose Your Action:</h4>
-          
+
           {/* Save Victim */}
           {hasLifePotion && victim && (
-            <button
-              onClick={() => setAction('save')}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg border-2 border-green-400 transition-all transform hover:scale-105"
+            <Button
+              onClick={() => setAction("save")}
+              variant="success"
+              size="lg"
+              fullWidth
+              icon={Heart}
             >
-              <Heart className="w-6 h-6 inline mr-2" />
               Save {victim} with Life Potion
-            </button>
+            </Button>
           )}
-          
+
           {/* Kill Someone */}
           {hasDeathPotion && (
-            <button
-              onClick={() => setAction('kill')}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg border-2 border-red-400 transition-all transform hover:scale-105"
+            <Button
+              onClick={() => setAction("kill")}
+              variant="danger"
+              size="lg"
+              fullWidth
+              icon={Skull}
             >
-              <Skull className="w-6 h-6 inline mr-2" />
               Use Death Potion on Someone
-            </button>
+            </Button>
           )}
-          
+
           {/* Do Nothing */}
-          <button
-            onClick={() => setAction('nothing')}
-            className="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 px-6 rounded-lg border border-purple-400"
+          <Button
+            onClick={() => setAction("nothing")}
+            variant="ghost"
+            size="md"
+            fullWidth
+            icon={AlertCircle}
           >
-            <AlertCircle className="w-5 h-5 inline mr-2" />
             Do Nothing This Night
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Kill Target Selection */}
-      {action === 'kill' && !selectedTarget && (
+      {action === "kill" && !selectedTarget && (
         <div className="space-y-3">
-          <h4 className="text-white font-semibold mb-3">☠️ Choose Who to Poison:</h4>
+          <h4 className="text-white font-semibold mb-3">
+            ☠️ Choose Who to Poison:
+          </h4>
           {alivePlayers.map((player) => (
             <button
               key={player.id}
@@ -153,7 +200,9 @@ function WitchNightPhase({ gameState, onNightAction }) {
       )}
 
       {/* Confirm Action */}
-      {((action === 'save' && victim) || (action === 'kill' && selectedTarget) || action === 'nothing') && (
+      {((action === "save" && victim) ||
+        (action === "kill" && selectedTarget) ||
+        action === "nothing") && (
         <div className="mt-4">
           <button
             onClick={handleSubmit}
@@ -166,7 +215,9 @@ function WitchNightPhase({ gameState, onNightAction }) {
 
       {/* Instructions */}
       <div className="mt-6 bg-purple-950/50 rounded-lg p-4 border border-purple-600/50">
-        <h4 className="text-purple-200 font-semibold text-sm mb-2">💡 Strategy:</h4>
+        <h4 className="text-purple-200 font-semibold text-sm mb-2">
+          💡 Strategy:
+        </h4>
         <ul className="text-purple-300 text-xs space-y-1 ml-4">
           <li>• Each potion can only be used ONCE per game</li>
           <li>• You can save yourself with the life potion</li>

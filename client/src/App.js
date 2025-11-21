@@ -5,6 +5,8 @@ import LobbyScreen from "./components/LobbyScreen";
 import GameScreen from "./components/GameScreen";
 import PrayerNotification from "./components/PrayerNotification";
 import RoleReveal from "./components/RoleReveal";
+import Toast from './components/Toast';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // const socket = io('http://localhost:5000');
 const socket = io(process.env.REACT_APP_BACKEND_URL || "http://localhost:5000");
@@ -19,31 +21,49 @@ function App() {
   const [myRole, setMyRole] = useState(null);
   const [error, setError] = useState("");
   const [showHunterRevenge, setShowHunterRevenge] = useState(false);
+  const [toasts, setToasts] = useState([]);
+const [isLoading, setIsLoading] = useState(false);
+const [loadingMessage, setLoadingMessage] = useState('');
+
+// Toast notification system
+const showToast = (message, type = 'info', duration = 3000) => {
+  const id = Date.now();
+  setToasts(prev => [...prev, { id, message, type, duration }]);
+};
+
+const removeToast = (id) => {
+  setToasts(prev => prev.filter(toast => toast.id !== id));
+};
 
   useEffect(() => {
     // Listen for room created
-    socket.on("room_created", (data) => {
-      setRoomCode(data.roomCode);
-      setScreen("lobby");
-    });
+socket.on('room_created', (data) => {
+  setRoomCode(data.roomCode);
+  setScreen('lobby');
+  setIsLoading(false);
+  showToast('Room created successfully! 🎉', 'success');
+});
 
     // Listen for room joined
-    socket.on("room_joined", (data) => {
-      setRoomCode(data.roomCode);
-      setScreen("lobby");
-    });
+socket.on('room_joined', (data) => {
+  setRoomCode(data.roomCode);
+  setScreen('lobby');
+  setIsLoading(false);
+  showToast('Joined room successfully! 👋', 'success');
+});
 
     // Listen for room updates
-    socket.on("room_update", (data) => {
-      setGameState(data);
-    });
+socket.on('room_update', (data) => {
+  setGameState(data);
+  // Show toast when new player joins (only if you're already in the room)
+  if (screen === 'lobby' && data.players.length > (gameState?.players?.length || 0)) {
+    const newPlayer = data.players[data.players.length - 1];
+    if (!newPlayer.isMe) {
+      showToast(`${newPlayer.name} joined the room! 🎮`, 'info', 2000);
+    }
+  }
+});
 
-    // Listen for role assignment
-    // socket.on('role_assigned', (data) => {
-    //   setMyRole(data.role);
-    //   setGameState(data.gameState);
-    //   setScreen('game');
-    // });
 
     // Listen for role assignment
     socket.on("role_assigned", (data) => {
@@ -62,12 +82,12 @@ function App() {
     socket.on("night_result", (data) => {
       setGameState(data.gameState);
     });
-
-    // Listen for errors
-    socket.on("error", (data) => {
-      setError(data.message);
-      setTimeout(() => setError(""), 3000);
-    });
+    
+// Listen for errors
+socket.on('error', (data) => {
+  setIsLoading(false);
+  showToast(data.message, 'error');
+});
 
     // Listen for prayer pause updates
     socket.on("prayer_pause_update", (data) => {
@@ -94,22 +114,29 @@ function App() {
     };
   }, [gameState]);
 
+  // const createRoom = (name, loc) => {
+  //   setPlayerName(name);
+  //   setLocation(loc);
+  //   socket.emit("create_room", { playerName: name, location: loc });
+  // };
   const createRoom = (name, loc) => {
-    setPlayerName(name);
-    setLocation(loc);
-    socket.emit("create_room", { playerName: name, location: loc });
-  };
+  setPlayerName(name);
+  setLocation(loc);
+  setIsLoading(true);
+  setLoadingMessage('Creating room...');
+  
+  socket.emit('create_room', { playerName: name, location: loc });
+};
 
-  const joinRoom = (name, loc, code) => {
-    setPlayerName(name);
-    setLocation(loc);
-    setRoomCode(code);
-    socket.emit("join_room", {
-      playerName: name,
-      location: loc,
-      roomCode: code,
-    });
-  };
+ const joinRoom = (name, loc, code) => {
+  setPlayerName(name);
+  setLocation(loc);
+  setRoomCode(code);
+  setIsLoading(true);
+  setLoadingMessage('Joining room...');
+  
+  socket.emit('join_room', { playerName: name, location: loc, roomCode: code });
+};
 
   const startGame = () => {
     socket.emit("start_game", { roomCode });
@@ -144,14 +171,30 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-      <PrayerNotification location={location} />
+     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+    <PrayerNotification location={location} />
+    
+    {/* Toast Notifications */}
+    <div className="fixed top-20 right-4 z-50 space-y-2">
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+    </div>
 
-      {error && (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
-          {error}
+     {/* Loading Overlay */}
+    {isLoading && (
+      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+        <div className="bg-purple-900/90 rounded-lg p-8 border-2 border-purple-500 shadow-2xl">
+          <LoadingSpinner size="xl" text={loadingMessage} />
         </div>
-      )}
+      </div>
+    )}
 
       {/* ✅ ADD ROLE REVEAL HERE */}
       {showRoleReveal && myRole && (

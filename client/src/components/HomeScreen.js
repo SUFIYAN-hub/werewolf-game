@@ -1,24 +1,26 @@
-import React, { useState } from 'react';
-import { Moon, Users } from 'lucide-react';
+import React, { useState } from "react";
+import { Moon, Users } from "lucide-react";
+import Button from "./Button";
+import LoadingSpinner from "./LoadingSpinner";
 
 function HomeScreen({ onCreateRoom, onJoinRoom }) {
   const [mode, setMode] = useState(null); // null, 'create', 'join'
-  const [playerName, setPlayerName] = useState('');
-  const [location, setLocation] = useState('');
-  const [roomCode, setRoomCode] = useState('');
+  const [playerName, setPlayerName] = useState("");
+  const [location, setLocation] = useState("");
+  const [roomCode, setRoomCode] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!playerName.trim() || !location.trim()) {
-      alert('Please enter your name and location');
+      alert("Please enter your name and location");
       return;
     }
 
-    if (mode === 'create') {
+    if (mode === "create") {
       onCreateRoom(playerName, location);
-    } else if (mode === 'join') {
+    } else if (mode === "join") {
       if (!roomCode.trim()) {
-        alert('Please enter room code');
+        alert("Please enter room code");
         return;
       }
       onJoinRoom(playerName, location, roomCode.toUpperCase());
@@ -45,35 +47,41 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
           <p className="text-green-200 text-sm text-center">
             "وَذَكِّرْ فَإِنَّ الذِّكْرَىٰ تَنفَعُ الْمُؤْمِنِينَ"
             <br />
-            <span className="text-xs">Remember your prayers and maintain balance in entertainment</span>
+            <span className="text-xs">
+              Remember your prayers and maintain balance in entertainment
+            </span>
           </p>
         </div>
 
         {!mode && (
           <div className="space-y-4">
-            <button
-              onClick={() => setMode('create')}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-105"
+            <Button
+              onClick={() => setMode("create")}
+              variant="primary"
+              size="lg"
+              fullWidth
+              icon={Users}
             >
-              <Users className="inline mr-2" />
               Create New Room
-            </button>
-            
-            <button
-              onClick={() => setMode('join')}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-lg shadow-lg transform transition hover:scale-105"
+            </Button>
+
+            <Button
+              onClick={() => setMode("join")}
+              variant="secondary"
+              size="lg"
+              fullWidth
             >
               Join Existing Room
-            </button>
+            </Button>
           </div>
         )}
 
         {mode && (
           <div className="bg-white/10 backdrop-blur-md rounded-lg p-6 border border-white/20">
             <h2 className="text-2xl font-bold text-white mb-4">
-              {mode === 'create' ? 'Create Room' : 'Join Room'}
+              {mode === "create" ? "Create Room" : "Join Room"}
             </h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-purple-200 mb-2">Your Name</label>
@@ -88,7 +96,9 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
               </div>
 
               <div>
-                <label className="block text-purple-200 mb-2">Your Location (for prayer times)</label>
+                <label className="block text-purple-200 mb-2">
+                  Your Location (for prayer times)
+                </label>
                 <input
                   type="text"
                   value={location}
@@ -98,9 +108,11 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
                 />
               </div>
 
-              {mode === 'join' && (
+              {mode === "join" && (
                 <div>
-                  <label className="block text-purple-200 mb-2">Room Code</label>
+                  <label className="block text-purple-200 mb-2">
+                    Room Code
+                  </label>
                   <input
                     type="text"
                     value={roomCode}
@@ -113,19 +125,23 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
               )}
 
               <div className="flex space-x-3">
-                <button
+                <Button
                   type="button"
                   onClick={() => setMode(null)}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg"
+                  variant="ghost"
+                  size="md"
+                  className="flex-1"
                 >
                   Back
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 px-6 rounded-lg"
+                  variant="success"
+                  size="md"
+                  className="flex-1"
                 >
-                  {mode === 'create' ? 'Create' : 'Join'}
-                </button>
+                  {mode === "create" ? "Create" : "Join"}
+                </Button>
               </div>
             </form>
           </div>
