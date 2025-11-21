@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { ScrollText, Moon, Sun, Skull, Users, MessageSquare, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function GameLog({ gameLog }) {
   const logEndRef = useRef(null);
@@ -138,72 +139,64 @@ function GameLog({ gameLog }) {
       {/* Log Entries */}
       <div className="p-4 max-h-96 overflow-y-auto custom-scrollbar">
         <div className="space-y-2">
-          {gameLog.map((log, index) => {
-            const style = getLogStyle(log.type);
-            
-            return (
-              <div
-                key={index}
-                className={`${style.bg} border ${style.border} rounded-lg p-3 transition-all hover:scale-101`}
-              >
-                <div className="flex items-start space-x-3">
-                  {/* Icon */}
-                  <div className="mt-1">
-                    {getLogIcon(log.type)}
-                  </div>
+          <AnimatePresence>
+  {gameLog.map((log, index) => {
+    const style = getLogStyle(log.type);
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    {/* Chat message format */}
-                    {log.type === 'chat' && (
-                      <div>
-                        <p className="font-semibold text-white text-sm">
-                          {log.player}
-                        </p>
-                        <p className={`${style.text} text-sm mt-1`}>
-                          {log.message}
-                        </p>
-                      </div>
-                    )}
+    return (
+      <motion.div
+        key={log.timestamp || index}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
+        transition={{ duration: 0.3 }}
+        className={`${style.bg} border ${style.border} rounded-lg p-3 transition-all hover:scale-101`}
+      >
+        <div className="flex items-start space-x-3">
+          <div className="mt-1">
+            {getLogIcon(log.type)}
+          </div>
 
-                    {/* System message format */}
-                    {log.type !== 'chat' && (
-                      <p className={`${style.text} text-sm font-medium`}>
-                        {log.message}
-                      </p>
-                    )}
+          <div className="flex-1 min-w-0">
+            {log.type === "chat" ? (
+              <>
+                <p className="font-semibold text-white text-sm">{log.player}</p>
+                <p className={`${style.text} text-sm mt-1`}>{log.message}</p>
+              </>
+            ) : (
+              <p className={`${style.text} text-sm font-medium`}>{log.message}</p>
+            )}
 
-                    {/* Timestamp */}
-                    <p className="text-xs text-gray-400 mt-1">
-                      {formatTime(log.timestamp)}
-                    </p>
-                  </div>
+            <p className="text-xs text-gray-400 mt-1">
+              {formatTime(log.timestamp)}
+            </p>
+          </div>
 
-                  {/* Special indicators */}
-                  {log.type === 'elimination' && (
-                    <div className="flex-shrink-0">
-                      <Skull className="w-5 h-5 text-red-400" />
-                    </div>
-                  )}
+          {log.type === "elimination" && (
+            <Skull className="w-5 h-5 text-red-400" />
+          )}
 
-                  {log.type === 'game_over' && (
-                    <div className="flex-shrink-0">
-                      <span className="text-2xl">🏆</span>
-                    </div>
-                  )}
-                </div>
+          {log.type === "game_over" && (
+            <span className="text-2xl">🏆</span>
+          )}
+        </div>
 
-                {/* Additional info for eliminations */}
-                {log.type === 'elimination' && log.role && (
-                  <div className="mt-2 ml-7 bg-black/30 rounded px-2 py-1 inline-block">
-                    <span className="text-xs text-gray-300">
-                      Role: <span className="text-white capitalize font-semibold">{log.role}</span>
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        {/* extra info for elimination */}
+        {log.type === "elimination" && log.role && (
+          <div className="mt-2 ml-7 bg-black/30 rounded px-2 py-1 inline-block">
+            <span className="text-xs text-gray-300">
+              Role:{" "}
+              <span className="text-white font-semibold capitalize">
+                {log.role}
+              </span>
+            </span>
+          </div>
+        )}
+      </motion.div>
+    );
+  })}
+</AnimatePresence>
+
           
           {/* Auto-scroll anchor */}
           <div ref={logEndRef} />

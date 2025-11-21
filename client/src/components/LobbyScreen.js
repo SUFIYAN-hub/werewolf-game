@@ -2,6 +2,7 @@ import React from "react";
 import Button from "./Button";
 import { Users, Copy, Play, Clock } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 function LobbyScreen({ roomCode, gameState, onStartGame }) {
   const [copied, setCopied] = useState(false);
@@ -30,7 +31,7 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
           <div className="text-center mb-8">
             <h2 className="text-white text-lg mb-2">Room Code</h2>
             <div className="flex items-center justify-center space-x-3">
-              <div className="bg-white/20 px-8 py-4 rounded-lg">
+              <div className="bg-white/20 px-8 py-4 rounded-lg animate-glowPulse">
                 <span className="text-4xl font-bold text-white tracking-wider">
                   {roomCode}
                 </span>
@@ -64,8 +65,11 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
 
             <div className="space-y-2">
               {gameState?.players?.map((player, index) => (
-                <div
+                <motion.div
                   key={player.id}
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: index * 0.1, duration: 0.4 }}
                   className={`p-4 rounded-lg flex items-center justify-between ${
                     player.isMe
                       ? "bg-purple-600/40 border-2 border-purple-400"
@@ -83,12 +87,13 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
                           <span className="text-purple-300 ml-2">(You)</span>
                         )}
                       </p>
+
                       {player.isHost && (
                         <span className="text-yellow-400 text-xs">👑 Host</span>
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>

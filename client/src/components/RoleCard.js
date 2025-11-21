@@ -1,5 +1,12 @@
-import React from 'react';
-import { Moon, Eye, Heart, Users, AlertCircle, AlertTriangle } from 'lucide-react';
+import React from "react";
+import {
+  Moon,
+  Eye,
+  Heart,
+  Users,
+  AlertCircle,
+  AlertTriangle,
+} from "lucide-react";
 
 function RoleCard({ role, isAlive }) {
   const getRoleInfo = () => {
@@ -117,7 +124,7 @@ function RoleCard({ role, isAlive }) {
     <div
       className={`bg-gradient-to-br ${roleInfo.color} rounded-lg p-6 border-2 ${
         roleInfo.borderColor
-      } shadow-2xl ${!isAlive ? "opacity-50 grayscale" : ""}`}
+      } shadow-2xl animate-glowPulse ${!isAlive ? "opacity-50 grayscale" : ""}`}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
