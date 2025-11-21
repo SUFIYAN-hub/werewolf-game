@@ -8,7 +8,6 @@ import {
   Users,
 } from "lucide-react";
 import Button from "./Button";
-import { Send, AlertTriangle, ThumbsUp } from "lucide-react";
 
 function DayPhase({
   gameState,
