@@ -64,7 +64,7 @@ function PlayerList({ players, myPlayerId, phase }) {
 
       {/* Alive Players */}
       <div className="space-y-2 mb-4">
-        {alivePlayers.map((player) => {
+        {alivePlayers.map((player, index) => {
           const status = getPlayerStatus(player);
 
           return (
