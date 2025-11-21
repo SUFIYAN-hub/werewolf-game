@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Eye, Heart, Users, AlertCircle } from 'lucide-react';
+import { Moon, Eye, Heart, Users, AlertCircle, AlertTriangle } from 'lucide-react';
 
 function RoleCard({ role, isAlive }) {
   const getRoleInfo = () => {
