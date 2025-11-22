@@ -7,6 +7,7 @@ import PrayerNotification from "./components/PrayerNotification";
 import RoleReveal from "./components/RoleReveal";
 import Toast from "./components/Toast";
 import LoadingSpinner from "./components/LoadingSpinner";
+import { motion } from "framer-motion";
 
 // const socket = io('http://localhost:5000');
 const socket = io(process.env.REACT_APP_BACKEND_URL || "http://localhost:5000");
