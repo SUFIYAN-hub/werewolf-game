@@ -179,7 +179,18 @@ function GameLog({ gameLog }) {
                   transition={{ duration: 0.3 }}
                   className={`${style.bg} border ${style.border} rounded-lg p-3 transition-all hover:scale-101`}
                 >
-                  {/* ... your existing log content ... */}
+                  <div className="flex items-start space-x-3">
+                    {/* Icon */}
+                    <div className="mt-1">{getLogIcon(log.type)}</div>
+
+                    {/* Text */}
+                    <div className="flex-1">
+                      <p className={`text-sm ${style.text}`}>{log.message}</p>
+                      <p className="text-xs text-gray-400">
+                        {formatTime(log.timestamp)}
+                      </p>
+                    </div>
+                  </div>
                 </motion.div>
               );
             })}
