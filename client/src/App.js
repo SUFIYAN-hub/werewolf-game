@@ -30,7 +30,7 @@ function App() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
-  const [showLocationSetup, setShowLocationSetup] = useState(false);
+  const [showLocationSetup, setShowLocationSetup] = useState(true);
 
   // Toast notification system
   const showToast = (message, type = "info", duration = 3000) => {
