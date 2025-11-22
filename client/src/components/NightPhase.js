@@ -283,17 +283,18 @@ function NightPhase({ gameState, myRole, isAlive, onNightAction }) {
               {/* Option to heal yourself (Doctor only) */}
               {myRole === "doctor" && (
                 <button
-                  onClick={() => handleSelectTarget(myPlayer.id)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    selectedTarget === myPlayer.id
+                  key={player.id}
+                  onClick={() => handleSelectTarget(player.id)}
+                  className={`p-5 sm:p-4 rounded-xl border-2 transition-all active:scale-95 touch-target ${
+                    selectedTarget === player.id
                       ? "bg-white/30 border-white scale-105"
-                      : "bg-white/10 border-white/30 hover:bg-white/20"
+                      : "bg-white/10 border-white/30 hover:bg-white/20 active:bg-white/30"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-                        {myPlayer.name.charAt(0).toUpperCase()}
+                    <div className="flex items-center space-x-4">
+                      <div className="w-14 h-14 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                        {player.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="text-left">
                         <p className="text-white font-semibold">

@@ -195,7 +195,7 @@ function DayPhase({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Share your thoughts..."
-                className="flex-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-purple-300 border border-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="flex-1 px-4 py-3 sm:py-2 rounded-lg bg-white/20 text-white placeholder-purple-300 border border-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500 text-base touch-target"
                 maxLength={200}
               />
               <Button

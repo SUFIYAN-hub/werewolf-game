@@ -5,8 +5,8 @@ import LobbyScreen from "./components/LobbyScreen";
 import GameScreen from "./components/GameScreen";
 import PrayerNotification from "./components/PrayerNotification";
 import RoleReveal from "./components/RoleReveal";
-import Toast from './components/Toast';
-import LoadingSpinner from './components/LoadingSpinner';
+import Toast from "./components/Toast";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 // const socket = io('http://localhost:5000');
 const socket = io(process.env.REACT_APP_BACKEND_URL || "http://localhost:5000");
@@ -22,48 +22,65 @@ function App() {
   const [error, setError] = useState("");
   const [showHunterRevenge, setShowHunterRevenge] = useState(false);
   const [toasts, setToasts] = useState([]);
-const [isLoading, setIsLoading] = useState(false);
-const [loadingMessage, setLoadingMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
-// Toast notification system
-const showToast = (message, type = 'info', duration = 3000) => {
-  const id = Date.now();
-  setToasts(prev => [...prev, { id, message, type, duration }]);
-};
+  // Toast notification system
+  const showToast = (message, type = "info", duration = 3000) => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type, duration }]);
+  };
 
-const removeToast = (id) => {
-  setToasts(prev => prev.filter(toast => toast.id !== id));
-};
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  // Handle PWA install prompt
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
 
   useEffect(() => {
     // Listen for room created
-socket.on('room_created', (data) => {
-  setRoomCode(data.roomCode);
-  setScreen('lobby');
-  setIsLoading(false);
-  showToast('Room created successfully! 🎉', 'success');
-});
+    socket.on("room_created", (data) => {
+      setRoomCode(data.roomCode);
+      setScreen("lobby");
+      setIsLoading(false);
+      showToast("Room created successfully! 🎉", "success");
+    });
 
     // Listen for room joined
-socket.on('room_joined', (data) => {
-  setRoomCode(data.roomCode);
-  setScreen('lobby');
-  setIsLoading(false);
-  showToast('Joined room successfully! 👋', 'success');
-});
+    socket.on("room_joined", (data) => {
+      setRoomCode(data.roomCode);
+      setScreen("lobby");
+      setIsLoading(false);
+      showToast("Joined room successfully! 👋", "success");
+    });
 
     // Listen for room updates
-socket.on('room_update', (data) => {
-  setGameState(data);
-  // Show toast when new player joins (only if you're already in the room)
-  if (screen === 'lobby' && data.players.length > (gameState?.players?.length || 0)) {
-    const newPlayer = data.players[data.players.length - 1];
-    if (!newPlayer.isMe) {
-      showToast(`${newPlayer.name} joined the room! 🎮`, 'info', 2000);
-    }
-  }
-});
-
+    socket.on("room_update", (data) => {
+      setGameState(data);
+      // Show toast when new player joins (only if you're already in the room)
+      if (
+        screen === "lobby" &&
+        data.players.length > (gameState?.players?.length || 0)
+      ) {
+        const newPlayer = data.players[data.players.length - 1];
+        if (!newPlayer.isMe) {
+          showToast(`${newPlayer.name} joined the room! 🎮`, "info", 2000);
+        }
+      }
+    });
 
     // Listen for role assignment
     socket.on("role_assigned", (data) => {
@@ -82,12 +99,12 @@ socket.on('room_update', (data) => {
     socket.on("night_result", (data) => {
       setGameState(data.gameState);
     });
-    
-// Listen for errors
-socket.on('error', (data) => {
-  setIsLoading(false);
-  showToast(data.message, 'error');
-});
+
+    // Listen for errors
+    socket.on("error", (data) => {
+      setIsLoading(false);
+      showToast(data.message, "error");
+    });
 
     // Listen for prayer pause updates
     socket.on("prayer_pause_update", (data) => {
@@ -110,7 +127,7 @@ socket.on('error', (data) => {
       socket.off("night_result");
       socket.off("error");
       socket.off("prayer_pause_update");
-      socket.off('hunter_revenge_prompt');
+      socket.off("hunter_revenge_prompt");
     };
   }, [gameState]);
 
@@ -120,23 +137,27 @@ socket.on('error', (data) => {
   //   socket.emit("create_room", { playerName: name, location: loc });
   // };
   const createRoom = (name, loc) => {
-  setPlayerName(name);
-  setLocation(loc);
-  setIsLoading(true);
-  setLoadingMessage('Creating room...');
-  
-  socket.emit('create_room', { playerName: name, location: loc });
-};
+    setPlayerName(name);
+    setLocation(loc);
+    setIsLoading(true);
+    setLoadingMessage("Creating room...");
 
- const joinRoom = (name, loc, code) => {
-  setPlayerName(name);
-  setLocation(loc);
-  setRoomCode(code);
-  setIsLoading(true);
-  setLoadingMessage('Joining room...');
-  
-  socket.emit('join_room', { playerName: name, location: loc, roomCode: code });
-};
+    socket.emit("create_room", { playerName: name, location: loc });
+  };
+
+  const joinRoom = (name, loc, code) => {
+    setPlayerName(name);
+    setLocation(loc);
+    setRoomCode(code);
+    setIsLoading(true);
+    setLoadingMessage("Joining room...");
+
+    socket.emit("join_room", {
+      playerName: name,
+      location: loc,
+      roomCode: code,
+    });
+  };
 
   const startGame = () => {
     socket.emit("start_game", { roomCode });
@@ -171,30 +192,69 @@ socket.on('error', (data) => {
   };
 
   return (
-     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-    <PrayerNotification location={location} />
-    
-    {/* Toast Notifications */}
-    <div className="fixed top-20 right-4 z-50 space-y-2">
-      {toasts.map(toast => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
-    </div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+      {showInstallPrompt && (
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="fixed bottom-4 left-4 right-4 bg-purple-600 text-white p-4 rounded-lg shadow-2xl z-50 safe-area-bottom"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="font-semibold">Install Werewolf App</p>
+              <p className="text-sm text-purple-100">
+                Play offline & get faster access!
+              </p>
+            </div>
 
-     {/* Loading Overlay */}
-    {isLoading && (
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-        <div className="bg-purple-900/90 rounded-lg p-8 border-2 border-purple-500 shadow-2xl">
-          <LoadingSpinner size="xl" text={loadingMessage} />
-        </div>
+            <div className="flex space-x-2 ml-4">
+              <button
+                onClick={() => setShowInstallPrompt(false)}
+                className="px-3 py-2 bg-white/20 rounded"
+              >
+                Later
+              </button>
+
+              <button
+                onClick={async () => {
+                  if (!deferredPrompt) return;
+                  deferredPrompt.prompt();
+                  const { outcome } = await deferredPrompt.userChoice;
+                  if (outcome === "accepted") setShowInstallPrompt(false);
+                  setDeferredPrompt(null);
+                }}
+                className="px-4 py-2 bg-white text-purple-600 font-semibold rounded"
+              >
+                Install
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      <PrayerNotification location={location} />
+
+      {/* Toast Notifications */}
+      <div className="fixed top-20 right-4 z-50 space-y-2">
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            duration={toast.duration}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
       </div>
-    )}
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-purple-900/90 rounded-lg p-8 border-2 border-purple-500 shadow-2xl">
+            <LoadingSpinner size="xl" text={loadingMessage} />
+          </div>
+        </div>
+      )}
 
       {/* ✅ ADD ROLE REVEAL HERE */}
       {showRoleReveal && myRole && (

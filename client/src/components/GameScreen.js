@@ -77,7 +77,7 @@ function GameScreen({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
-      className={`min-h-screen bg-gradient-to-br ${getPhaseColor()} transition-all duration-1000`}
+      className={`min-h-screen bg-gradient-to-br ${getPhaseColor()} transition-all duration-1000 safe-area-top safe-area-bottom`}
     >
       {/* Phase Change Overlay */}
       <AnimatePresence>
@@ -117,7 +117,7 @@ function GameScreen({
         )}
 
       {/* Header */}
-      <div className="bg-black/30 backdrop-blur-md border-b border-white/20 sticky top-0 z-40">
+      <div className="bg-black/30 backdrop-blur-md border-b border-white/20 sticky top-0 z-40 safe-area-top">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
             {/* Phase Info */}

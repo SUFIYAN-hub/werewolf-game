@@ -70,7 +70,7 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
                   initial={{ x: -50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: index * 0.1, duration: 0.4 }}
-                  className={`p-4 rounded-lg flex items-center justify-between ${
+                  className={`p-4 sm:p-3 rounded-lg flex items-center justify-between touch-target ${
                     player.isMe
                       ? "bg-purple-600/40 border-2 border-purple-400"
                       : "bg-white/10"
