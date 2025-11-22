@@ -8,6 +8,8 @@ import RoleReveal from "./components/RoleReveal";
 import Toast from "./components/Toast";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { motion } from "framer-motion";
+import LocationPermission from "./components/LocationPermission";
+import { getSavedLocation } from "./services/locationService";
 
 // const socket = io('http://localhost:5000');
 const socket = io(process.env.REACT_APP_BACKEND_URL || "http://localhost:5000");
@@ -27,6 +29,8 @@ function App() {
   const [loadingMessage, setLoadingMessage] = useState("");
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [showLocationSetup, setShowLocationSetup] = useState(false);
 
   // Toast notification system
   const showToast = (message, type = "info", duration = 3000) => {
@@ -50,6 +54,18 @@ function App() {
 
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
+
+useEffect(() => {
+  // Check if location is already saved
+  const savedLocation = getSavedLocation();
+  if (savedLocation) {
+    setUserLocation(savedLocation);
+    setLocation(savedLocation.displayName || savedLocation.city);
+  } else {
+    // Show location setup if not saved
+    setShowLocationSetup(true);
+  }
+}, []);
 
   useEffect(() => {
     // Listen for room created
@@ -160,6 +176,13 @@ function App() {
     });
   };
 
+const handleLocationSet = (locationData) => {
+  setUserLocation(locationData);
+  setLocation(locationData.displayName || locationData.city);
+  setShowLocationSetup(false);
+  showToast(`Location set: ${locationData.displayName}`, 'success');
+};
+
   const startGame = () => {
     socket.emit("start_game", { roomCode });
   };
@@ -233,7 +256,7 @@ function App() {
         </motion.div>
       )}
 
-      <PrayerNotification location={location} />
+      <PrayerNotification location={userLocation} />
 
       {/* Toast Notifications */}
       <div className="fixed top-20 right-4 z-50 space-y-2">
@@ -300,7 +323,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
-      <PrayerNotification location={location} />
+      {showLocationSetup && (
+      <LocationPermission onLocationSet={handleLocationSet} />
+    )}
+      <PrayerNotification location={userLocation} />
 
       {error && (
         <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
