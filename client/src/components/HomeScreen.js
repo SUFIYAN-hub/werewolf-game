@@ -3,6 +3,7 @@ import { Moon, Users } from "lucide-react";
 import Button from "./Button";
 import LoadingSpinner from "./LoadingSpinner";
 import { motion } from "framer-motion";
+import PrayerSettings from "./PrayerSettings";
 
 function HomeScreen({ onCreateRoom, onJoinRoom }) {
   const [mode, setMode] = useState(null); // null, 'create', 'join'
@@ -140,6 +141,10 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full px-4 py-3 sm:py-2 rounded-lg bg-white/20 text-white placeholder-purple-300 border border-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500 touch-target"
                   placeholder="e.g., Yavatmal, India"
+                />
+                <PrayerSettings
+                  settings={prayerSettings}
+                  onUpdate={setPrayerSettings}
                 />
               </div>
 

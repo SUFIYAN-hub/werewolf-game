@@ -107,6 +107,11 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
               <li>• Prayer times will pause the game automatically</li>
               <li>• Stay respectful and have fun!</li>
             </ul>
+
+            <p className="text-white text-sm opacity-60">
+              Prayer Calc: {gameState.prayerSettings?.method} | Madhab:{" "}
+              {gameState.prayerSettings?.madhab}
+            </p>
           </div>
 
           {/* Start Button */}

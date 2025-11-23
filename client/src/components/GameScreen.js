@@ -36,6 +36,7 @@ function GameScreen({
   const { phase, roundNumber, timer, prayerPaused, players } = gameState;
   const myPlayer = players?.find((p) => p.isMe);
   const isAlive = myPlayer?.isAlive;
+  const isHost = myPlayer?.isHost;
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -160,6 +161,24 @@ function GameScreen({
 
                   <p className="text-purple-200 text-xs">Time Left</p>
                 </div>
+                {/* Host-only Prayer Pause Button */}
+                {isHost && (
+                  <button
+                    onClick={() => onTogglePrayerPause(!prayerPaused)}
+                    className={`p-2 sm:p-3 rounded-lg ${
+                      prayerPaused
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-purple-600 hover:bg-purple-700"
+                    }`}
+                    title={prayerPaused ? "Resume Game" : "Pause for Prayer"}
+                  >
+                    {prayerPaused ? (
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    ) : (
+                      <Pause className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    )}
+                  </button>
+                )}
 
                 {/* Prayer Pause Button */}
                 <button
@@ -263,7 +282,7 @@ function GameScreen({
                   {gameState.gameLog[gameState.gameLog.length - 1]?.message}
                 </h2>
                 <p className="text-purple-200 mb-4 sm:mb-6 text-sm sm:text-base">
-                  Thanks for playing! May Allah bless you all.
+                  Thanks for playing!.
                 </p>
                 <button
                   onClick={() => window.location.reload()}
