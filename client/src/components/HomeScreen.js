@@ -10,6 +10,14 @@ function HomeScreen({ onCreateRoom, onJoinRoom }) {
   const [playerName, setPlayerName] = useState("");
   const [location, setLocation] = useState("");
   const [roomCode, setRoomCode] = useState("");
+  const [prayerSettings, setPrayerSettings] = useState({
+  fajr: true,
+  dhuhr: true,
+  asr: true,
+  maghrib: true,
+  isha: true,
+});
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
