@@ -13,15 +13,27 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // function LobbyScreen({ roomCode, gameState, onStartGame }) {
-  //   const copyRoomCode = () => {
-  //     navigator.clipboard.writeText(roomCode);
-  //     alert('Room code copied!');
-  //   };
+  // ✅ ADD THIS - Prevent render if no gameState
+  if (!gameState) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white/10 backdrop-blur-md rounded-lg p-8 border border-white/20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white text-xl">Loading room...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const isHost = gameState?.players?.find((p) => p.isMe)?.isHost;
   const playerCount = gameState?.players?.length || 0;
   const canStart = playerCount >= 5;
+
+  // ✅ SAFE - Extract prayer settings with defaults
+  const prayerMethod = gameState?.prayerSettings?.method || 'KARACHI';
+  const prayerMadhab = gameState?.prayerSettings?.madhab || 'HANAFI';
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -108,9 +120,9 @@ function LobbyScreen({ roomCode, gameState, onStartGame }) {
               <li>• Stay respectful and have fun!</li>
             </ul>
 
-            <p className="text-white text-sm opacity-60">
-              Prayer Calc: {gameState.prayerSettings?.method} | Madhab:{" "}
-              {gameState.prayerSettings?.madhab}
+            {/* ✅ FIXED - Safe prayer settings display */}
+            <p className="text-white text-sm opacity-60 mt-2">
+              Prayer Calc: {prayerMethod} | Madhab: {prayerMadhab}
             </p>
           </div>
 
