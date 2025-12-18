@@ -1,5 +1,8 @@
 const { GameRoom, generateRoomCode } = require("./gameLogic");
 
+// ✅ FIX 1: Store timers globally to prevent duplicates
+const activeTimers = new Map();
+
 function handleSocketConnection(socket, io) {
   // Create a new room
   socket.on("create_room", (data) => {
@@ -40,7 +43,7 @@ function handleSocketConnection(socket, io) {
     socket.join(roomCode);
 
     socket.emit("room_joined", { roomCode, player });
-    // io.to(roomCode).emit('room_update', room.getPublicState(socket.id));
+    
     // Send personalized state to each player
     room.players.forEach((player) => {
       io.to(player.id).emit("room_update", room.getPublicState(player.id));
@@ -88,115 +91,108 @@ function handleSocketConnection(socket, io) {
   });
 
   // Night actions
-  socket.on("night_action", (data) => {
+  socket.on('night_action', (data) => {
     const { roomCode, action, targetId } = data;
     const room = global.gameRooms.get(roomCode);
-
-    if (!room || room.phase !== "night") return;
-
-    const player = room.players.find((p) => p.id === socket.id);
+    
+    if (!room || room.phase !== 'night') return;
+    
+    const player = room.players.find(p => p.id === socket.id);
     if (!player || !player.isAlive) return;
-
+    
+    // Werewolf kill
     if (action === 'werewolf_kill' && player.role === 'werewolf') {
-  room.nightActions.werewolfTarget = targetId;
-  player.hasActed = true;
+      room.nightActions.werewolfTarget = targetId;
+      player.hasActed = true;
+      
+      // Notify ALL werewolves about the target selection
+      room.players.forEach(p => {
+        io.to(p.id).emit('game_update', room.getPublicState(p.id));
+      });
+      return;
+    } 
+    // Doctor heal
+    else if (action === 'doctor_heal' && player.role === 'doctor') {
+      room.nightActions.doctorTarget = targetId;
+      player.hasActed = true;
+    } 
+    // ✅ FIX 2: Seer check - Send result immediately
+    else if (action === 'seer_check' && player.role === 'seer') {
+      room.nightActions.seerTarget = targetId;
+      player.hasActed = true;
+      
+      // Send investigation result to seer immediately
+      const target = room.players.find(p => p.id === targetId);
+      if (target) {
+        const isWerewolf = target.role === 'werewolf';
+        io.to(socket.id).emit('seer_result', {
+          targetName: target.name,
+          targetId: target.id,
+          isWerewolf: isWerewolf,
+          message: isWerewolf 
+            ? `${target.name} is a WEREWOLF! 🐺` 
+            : `${target.name} is NOT a werewolf. ✅`
+        });
+      }
+    }
+    // Witch save (life potion)
+    else if (action === 'witch_save' && player.role === 'witch') {
+      if (!player.usedLifePotion) {
+        room.nightActions.witchSave = targetId;
+        player.usedLifePotion = true;
+        player.hasActed = true;
+      }
+    }
+    // Witch kill (death potion)
+    else if (action === 'witch_kill' && player.role === 'witch') {
+      if (!player.usedDeathPotion) {
+        room.nightActions.witchKill = targetId;
+        player.usedDeathPotion = true;
+        player.hasActed = true;
+      }
+    }
+    // Witch do nothing
+    else if (action === 'witch_nothing' && player.role === 'witch') {
+      player.hasActed = true;
+    }
+    // Detective check
+    else if (action === 'detective_check' && player.role === 'detective') {
+      if (!player.hasUsedAbility) {
+        room.nightActions.detectiveCheck = {
+          player1: data.targetId.player1,
+          player2: data.targetId.player2
+        };
+        player.hasUsedAbility = true;
+        player.hasActed = true;
+      }
+    }
+    
+    io.to(roomCode).emit('game_update', room.getPublicState(socket.id));
+  });
 
-  // ✅ NEW: Witch night actions
-socket.on('night_action', (data) => {
-  const { roomCode, action, targetId } = data;
-  const room = global.gameRooms.get(roomCode);
-  
-  if (!room || room.phase !== 'night') return;
-  
-  const player = room.players.find(p => p.id === socket.id);
-  if (!player || !player.isAlive) return;
-  
-  // Werewolf kill
-  if (action === 'werewolf_kill' && player.role === 'werewolf') {
-    room.nightActions.werewolfTarget = targetId;
-    player.hasActed = true;
-    room.players.forEach(p => {
-      io.to(p.id).emit('game_update', room.getPublicState(p.id));
+  // Hunter revenge handler
+  socket.on('hunter_revenge', (data) => {
+    const { roomCode, targetId } = data;
+    const room = global.gameRooms.get(roomCode);
+    
+    if (!room) return;
+    
+    const hunter = room.players.find(p => p.id === socket.id);
+    if (!hunter || hunter.role !== 'hunter' || hunter.isAlive) return;
+    
+    // Process hunter's revenge
+    room.processHunterRevenge(socket.id, targetId);
+    
+    // Check win condition after revenge
+    const winner = room.checkWinCondition();
+    
+    // Update all players
+    room.players.forEach(player => {
+      io.to(player.id).emit('game_update', room.getPublicState(player.id));
     });
-  } 
-  // Doctor heal
-  else if (action === 'doctor_heal' && player.role === 'doctor') {
-    room.nightActions.doctorTarget = targetId;
-    player.hasActed = true;
-  } 
-  // Seer check
-  else if (action === 'seer_check' && player.role === 'seer') {
-    room.nightActions.seerTarget = targetId;
-    player.hasActed = true;
-  }
-  // ✅ NEW: Witch save (life potion)
-  else if (action === 'witch_save' && player.role === 'witch') {
-    if (!player.usedLifePotion) {
-      room.nightActions.witchSave = targetId;
-      player.usedLifePotion = true;
-      player.hasActed = true;
-    }
-  }
-  // ✅ NEW: Witch kill (death potion)
-  else if (action === 'witch_kill' && player.role === 'witch') {
-    if (!player.usedDeathPotion) {
-      room.nightActions.witchKill = targetId;
-      player.usedDeathPotion = true;
-      player.hasActed = true;
-    }
-  }
-  // ✅ NEW: Witch do nothing
-  else if (action === 'witch_nothing' && player.role === 'witch') {
-    player.hasActed = true;
-  }
-  // ✅ NEW: Detective check
-  else if (action === 'detective_check' && player.role === 'detective') {
-    if (!player.hasUsedAbility) {
-      room.nightActions.detectiveCheck = {
-        player1: data.targetId.player1,
-        player2: data.targetId.player2
-      };
-      player.hasUsedAbility = true;
-      player.hasActed = true;
-    }
-  }
-  
-  io.to(roomCode).emit('game_update', room.getPublicState(socket.id));
-});
-
-// ✅ NEW: Hunter revenge handler
-socket.on('hunter_revenge', (data) => {
-  const { roomCode, targetId } = data;
-  const room = global.gameRooms.get(roomCode);
-  
-  if (!room) return;
-  
-  const hunter = room.players.find(p => p.id === socket.id);
-  if (!hunter || hunter.role !== 'hunter' || hunter.isAlive) return;
-  
-  // Process hunter's revenge
-  room.processHunterRevenge(socket.id, targetId);
-  
-  // Check win condition after revenge
-  const winner = room.checkWinCondition();
-  
-  // Update all players
-  room.players.forEach(player => {
-    io.to(player.id).emit('game_update', room.getPublicState(player.id));
-  });
-  
-  // Clear hunter revenge flag
-  room.nightActions.hunterRevenge = null;
-});
-  
-  // Notify ALL werewolves about the target selection
-  room.players.forEach(p => {
-    io.to(p.id).emit('game_update', room.getPublicState(p.id));
-  });
-  return; // Important: return here to skip the general broadcast below
-}
-
-    io.to(roomCode).emit("game_update", room.getPublicState(socket.id));
+    
+    // Clear hunter revenge flag
+    room.nightActions.hunterRevenge = null;
   });
 
   // Day chat message
@@ -263,7 +259,7 @@ socket.on('hunter_revenge', (data) => {
 
   // Vote
   socket.on("cast_vote", (data) => {
-    const { roomCode, vote } = data; // vote: true (guilty) or false (innocent)
+    const { roomCode, vote } = data;
     const room = global.gameRooms.get(roomCode);
 
     if (!room || room.phase !== "voting") return;
@@ -286,7 +282,7 @@ socket.on('hunter_revenge', (data) => {
     io.to(roomCode).emit("prayer_pause_update", { paused });
   });
 
-  // Disconnect
+  // ✅ FIX 3: Better disconnect handling
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
 
@@ -294,19 +290,45 @@ socket.on('hunter_revenge', (data) => {
     for (const [roomCode, room] of global.gameRooms.entries()) {
       const player = room.players.find((p) => p.id === socket.id);
       if (player) {
-        room.removePlayer(socket.id);
-
-        if (room.players.length === 0) {
-          global.gameRooms.delete(roomCode);
-          console.log(`Room ${roomCode} deleted`);
-        } else {
-          // io.to(roomCode).emit(
-          //   "room_update",
-          //   room.getPublicState(room.players[0].id)
-          room.players.forEach(player => {
-  io.to(player.id).emit('room_update', room.getPublicState(player.id));
+        console.log(`Player ${player.name} disconnected from room ${roomCode}`);
+        
+        // If game hasn't started, just remove the player
+        if (!room.gameStarted) {
+          room.removePlayer(socket.id);
+          
+          if (room.players.length === 0) {
+            // Clear timer if room is empty
+            clearTimer(roomCode);
+            global.gameRooms.delete(roomCode);
+            console.log(`Room ${roomCode} deleted (empty)`);
+          } else {
+            // Update remaining players
+            room.players.forEach(p => {
+              io.to(p.id).emit('room_update', room.getPublicState(p.id));
+            });
           }
-          );
+        } else {
+          // Game is in progress - mark player as disconnected but don't remove
+          player.isConnected = false;
+          
+          room.gameLog.push({
+            type: "system",
+            message: `${player.name} disconnected`,
+            timestamp: Date.now(),
+          });
+          
+          // Update all players
+          room.players.forEach(p => {
+            io.to(p.id).emit('game_update', room.getPublicState(p.id));
+          });
+          
+          // Check if all players disconnected
+          const connectedPlayers = room.players.filter(p => p.isConnected !== false);
+          if (connectedPlayers.length === 0) {
+            clearTimer(roomCode);
+            global.gameRooms.delete(roomCode);
+            console.log(`Room ${roomCode} deleted (all players disconnected)`);
+          }
         }
         break;
       }
@@ -314,26 +336,51 @@ socket.on('hunter_revenge', (data) => {
   });
 }
 
-// Timer management
+// ✅ FIX 1: Improved timer management with proper cleanup
 function startTimer(roomCode, io) {
+  // Clear any existing timer for this room
+  clearTimer(roomCode);
+  
   const room = global.gameRooms.get(roomCode);
   if (!room) return;
 
   const interval = setInterval(() => {
-    if (room.prayerPaused) return;
-
-    room.timer--;
-
-    if (room.timer <= 0) {
+    // Check if room still exists
+    const currentRoom = global.gameRooms.get(roomCode);
+    if (!currentRoom) {
       clearInterval(interval);
+      activeTimers.delete(roomCode);
+      return;
+    }
+
+    // Pause for prayer
+    if (currentRoom.prayerPaused) return;
+
+    currentRoom.timer--;
+
+    if (currentRoom.timer <= 0) {
+      clearInterval(interval);
+      activeTimers.delete(roomCode);
       handlePhaseEnd(roomCode, io);
-    } else if (room.timer % 5 === 0) {
-      // Update every 5 seconds
-      room.players.forEach((player) => {
-        io.to(player.id).emit("game_update", room.getPublicState(player.id));
+    } else {
+      // Update players every second for smooth countdown
+      currentRoom.players.forEach((player) => {
+        io.to(player.id).emit("game_update", currentRoom.getPublicState(player.id));
       });
     }
   }, 1000);
+
+  // Store the interval
+  activeTimers.set(roomCode, interval);
+}
+
+function clearTimer(roomCode) {
+  const interval = activeTimers.get(roomCode);
+  if (interval) {
+    clearInterval(interval);
+    activeTimers.delete(roomCode);
+    console.log(`Timer cleared for room ${roomCode}`);
+  }
 }
 
 function handlePhaseEnd(roomCode, io) {
@@ -341,57 +388,55 @@ function handlePhaseEnd(roomCode, io) {
   if (!room) return;
 
   if (room.phase === 'night') {
-  const nightResult = room.processNightActions();
-  
-  // ✅ NEW: Check if hunter was killed during night
-  if (room.nightActions.hunterRevenge) {
-    const hunterId = room.nightActions.hunterRevenge;
-    io.to(hunterId).emit('hunter_revenge_prompt');
-    // Wait for hunter's choice before continuing
-    return;
-  }
-  
-  room.startDayPhase();
-  
-  room.players.forEach(player => {
-    io.to(player.id).emit('night_result', {
-      ...nightResult,
-      gameState: room.getPublicState(player.id)
+    const nightResult = room.processNightActions();
+    
+    // Check if hunter was killed during night
+    if (room.nightActions.hunterRevenge) {
+      const hunterId = room.nightActions.hunterRevenge;
+      io.to(hunterId).emit('hunter_revenge_prompt');
+      return;
+    }
+    
+    room.startDayPhase();
+    
+    room.players.forEach(player => {
+      io.to(player.id).emit('night_result', {
+        ...nightResult,
+        gameState: room.getPublicState(player.id)
+      });
     });
-  });
-  
-  const winner = room.checkWinCondition();
-  if (!winner) {
-    startTimer(roomCode, io);
-  }
+    
+    const winner = room.checkWinCondition();
+    if (!winner) {
+      startTimer(roomCode, io);
+    }
   } else if (room.phase === "day") {
-    // Day ends, skip to night if no voting started
     room.startNightPhase();
     room.players.forEach((player) => {
       io.to(player.id).emit("game_update", room.getPublicState(player.id));
     });
     startTimer(roomCode, io);
   } else if (room.phase === 'voting') {
-  room.processVoting();
-  
-  // ✅ NEW: Check if hunter was eliminated
-  if (room.nightActions.hunterRevenge) {
-    const hunterId = room.nightActions.hunterRevenge;
-    io.to(hunterId).emit('hunter_revenge_prompt');
-    // Don't proceed until hunter makes choice
-    return;
-  }
-  
-  const winner = room.checkWinCondition();
-  
-  room.players.forEach(player => {
-    io.to(player.id).emit('game_update', room.getPublicState(player.id));
-  });
-  
-  if (!winner) {
-    room.startNightPhase();
-    startTimer(roomCode, io);
+    room.processVoting();
+    
+    // Check if hunter was eliminated
+    if (room.nightActions.hunterRevenge) {
+      const hunterId = room.nightActions.hunterRevenge;
+      io.to(hunterId).emit('hunter_revenge_prompt');
+      return;
+    }
+    
+    const winner = room.checkWinCondition();
+    
+    room.players.forEach(player => {
+      io.to(player.id).emit('game_update', room.getPublicState(player.id));
+    });
+    
+    if (!winner) {
+      room.startNightPhase();
+      startTimer(roomCode, io);
+    }
   }
 }
-}
+
 module.exports = { handleSocketConnection };

@@ -15,6 +15,9 @@ import { getSavedLocation } from "./services/locationService";
 // socket
 const socket = io(process.env.REACT_APP_BACKEND_URL || "http://localhost:5000");
 
+// Make socket globally available for components
+window.socket = socket;
+
 function App() {
   const [screen, setScreen] = useState("home"); // home, lobby, game
   const [roomCode, setRoomCode] = useState("");
